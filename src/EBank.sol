@@ -9,7 +9,7 @@ contract EBank {
 
     function deposit() external payable {
         require(msg.value > 0, "Amount Should be greater than Zero.");
-        balances[msg.sender] = balances[msg.sender] + msg.value;
+        balances[msg.sender] += msg.value;
         emit AmountDeposited(msg.sender, msg.value);
     }
 
@@ -21,12 +21,12 @@ contract EBank {
 
         (bool success,) = msg.sender.call{value: amountToWithdraw}("");
         require(success, "Transfer failed");
-
-        balances[msg.sender] = balances[msg.sender] - amountToWithdraw;
+        balances[msg.sender] -= amountToWithdraw;
         emit withdrawAmount(msg.sender, amountToWithdraw);
     }
 
     function getAccountBalance(address user) public view returns (uint256) {
         return balances[user];
     }
+    receive() external payable{}
 }
