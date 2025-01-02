@@ -1,66 +1,66 @@
-## Foundry
+# Reentrancy Attack Implementation
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This project demonstrates a reentrancy attack on a vulnerable smart contract using Foundry for testing.
 
-Foundry consists of:
+## Contracts
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+### EBank.sol
+A vulnerable smart contract that allows users to deposit and withdraw ETH.
 
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```solidity
+function withdraw(uint256 amountToWithdraw) external {
+    require(amountToWithdraw > 0 && balances[msg.sender] >= amountToWithdraw);
+    (bool success,) = msg.sender.call{value: amountToWithdraw}("");  // Vulnerable line
+    balances[msg.sender] -= amountToWithdraw;  // Balance updated after transfer
+}
 ```
 
-### Test
+Vulnerability: Updates balance after external call, enabling reentrancy.
 
-```shell
-$ forge test
+### Attacker.sol
+Contract that exploits the reentrancy vulnerability.
+
+Key features:
+- Attack amount: 0.5 ETH
+- Max recursion depth: 3
+- State management to prevent concurrent attacks
+- Automatic return of remaining funds
+
+## Test Implementation
+
+`TestReentrancy.t.sol` verifies the attack:
+
+1. Setup:
+   - Deploys EBank and Attacker contracts
+   - Funds bank with 10 ETH
+   - User deposits 1 ETH as victim
+
+2. Attack sequence:
+   - Records initial balances
+   - User executes attack with 1 ETH
+   - Verifies successful fund drain
+
+## Running Tests
+
+```bash
+forge test --mt testAttackOnEBank -vvv
 ```
 
-### Format
+## Security Notes
 
-```shell
-$ forge fmt
-```
+This implementation is for educational purposes only. In production:
+1. Use checks-effects-interactions pattern
+2. Consider using ReentrancyGuard
+3. Update balances before external calls
 
-### Gas Snapshots
+## Prevention
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+To fix the vulnerability:
+```solidity
+function withdraw(uint256 amountToWithdraw) external {
+    require(amountToWithdraw > 0 && balances[msg.sender] >= amountToWithdraw);
+    balances[msg.sender] -= amountToWithdraw;  // Update first
+    (bool success,) = msg.sender.call{value: amountToWithdraw}("");
+    require(success, "Transfer failed");
+}
 ```
