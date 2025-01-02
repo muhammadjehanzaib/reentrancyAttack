@@ -28,5 +28,6 @@ contract EBank {
     function getAccountBalance(address user) public view returns (uint256) {
         return balances[user];
     }
-    receive() external payable{}
+
+    receive() external payable {}
 }
