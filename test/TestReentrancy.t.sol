@@ -18,20 +18,17 @@ contract TestReentrancy is Test {
         vm.deal(innocent, amountDeposited);
         vm.deal(user, amountDeposited);
         vm.deal(address(ebank), 10 ether);
-
-        
     }
 
-    function testUserAmountTransfered() public view{
+    function testUserAmountTransfered() public view {
         // vm.startPrank(innocent);
         // ebank.deposit{value: 10 ether}();
         // vm.stopPrank();
         uint256 ebankBalance = address(ebank).balance;
         assertEq(ebankBalance, 10 ether);
-        
     }
 
-    function testToAttackContract() public{
+    function testToAttackContract() public {
         testUserAmountTransfered();
         vm.startPrank(user);
         attacker.attack{value: 10 ether}();
@@ -41,7 +38,4 @@ contract TestReentrancy is Test {
         // console.log(address(attacker).balance);
         vm.stopPrank();
     }
-
-    
-
 }

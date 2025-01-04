@@ -14,10 +14,7 @@ contract EBank {
     }
 
     function withdraw() external {
-        require(
-            balances[msg.sender] > 0,
-            "Amount and deposit Balance should be greater than zero"
-        );
+        require(balances[msg.sender] > 0, "Amount and deposit Balance should be greater than zero");
 
         (bool success,) = msg.sender.call{value: balances[msg.sender]}("");
         require(success, "Failed to send ether");
