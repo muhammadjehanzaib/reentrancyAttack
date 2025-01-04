@@ -13,16 +13,16 @@ contract EBank {
         emit AmountDeposited(msg.sender, msg.value);
     }
 
-    function withdraw(uint256 amountToWithdraw) external {
+    function withdraw() external {
         require(
-            amountToWithdraw > 0 && balances[msg.sender] >= amountToWithdraw,
+            balances[msg.sender] > 0,
             "Amount and deposit Balance should be greater than zero"
         );
 
-        (bool success,) = msg.sender.call{value: amountToWithdraw}("");
-        require(success, "Transfer failed");
-        balances[msg.sender] -= amountToWithdraw;
-        emit withdrawAmount(msg.sender, amountToWithdraw);
+        (bool success,) = msg.sender.call{value: balances[msg.sender]}("");
+        require(success, "Failed to send ether");
+        balances[msg.sender] = 0;
+        emit withdrawAmount(msg.sender, 0);
     }
 
     function getAccountBalance(address user) public view returns (uint256) {
