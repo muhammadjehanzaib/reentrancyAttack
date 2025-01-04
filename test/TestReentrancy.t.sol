@@ -10,31 +10,38 @@ contract TestReentrancy is Test {
     Attacker attacker;
     uint256 public amountDeposited = 10 ether;
     address user = makeAddr("user");
+    address innocent = makeAddr("innocent");
 
     function setUp() external {
         ebank = new EBank();
         attacker = new Attacker(address(ebank));
-        vm.deal(address(ebank), amountDeposited);
+        vm.deal(innocent, amountDeposited);
         vm.deal(user, amountDeposited);
-        vm.deal(address(attacker), 2 ether);
+        vm.deal(address(ebank), 10 ether);
+
+        
     }
 
-    function testToCheckContractAnount() public view {
-        assertEq(address(ebank).balance, amountDeposited);
+    function testUserAmountTransfered() public view{
+        // vm.startPrank(innocent);
+        // ebank.deposit{value: 10 ether}();
+        // vm.stopPrank();
+        uint256 ebankBalance = address(ebank).balance;
+        assertEq(ebankBalance, 10 ether);
+        
     }
 
-    function testAttackOnEBank() public {
-        // User deposits 1 Ether into the EBank contract
-        // vm.prank(user);
+    function testToAttackContract() public{
+        testUserAmountTransfered();
         vm.startPrank(user);
-        ebank.deposit{value: 1 ether}();
-
-        // User calls the attack function on the Attacker contract
-        // vm.prank(user);
-        attacker.attack();
+        attacker.attack{value: 10 ether}();
+        uint256 eBankBalanceAfterAttack = address(ebank).balance;
+        assertEq(eBankBalanceAfterAttack, 0 ether);
+        assertEq(address(attacker).balance, 20 ether);
+        // console.log(address(attacker).balance);
         vm.stopPrank();
-
-        // Assert that the EBank contract's balance is 0 after the attack
-        assertEq(address(ebank).balance, 0);
     }
+
+    
+
 }
