@@ -34,7 +34,11 @@ contract TestReentrancy is Test {
         attacker.attack{value: 10 ether}();
         uint256 eBankBalanceAfterAttack = address(ebank).balance;
         assertEq(eBankBalanceAfterAttack, 0 ether);
-        assertEq(address(attacker).balance, 20 ether);
+        uint256 beforeWithdrawAttackerContractBalance = address(attacker).balance;
+        assertEq(beforeWithdrawAttackerContractBalance, 20 ether);
+        attacker.withdrawStolenFunds();
+        assertEq(address(user).balance, 20 ether);
+        assertEq(address(attacker).balance, 0);
         // console.log(address(attacker).balance);
         vm.stopPrank();
     }
