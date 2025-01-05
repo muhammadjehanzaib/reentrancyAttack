@@ -28,6 +28,6 @@ contract Attacker {
     }
 
     function withdrawStolenFunds() public {
-        payable(address(this)).transfer(address(this).balance);
+        payable(msg.sender).transfer(address(this).balance);
     }
 }
